@@ -18,10 +18,24 @@ async function closeFeePeriod() {
       stakingThales.stakingthales.abi,
       wallet
     );
-    let tx = await stakingContract.closePeriod();
-    await tx.wait().then((e) => {
-      console.log("done");
-    });
+
+    let lastPeriodTimeStamp = (
+      await stakingContract.lastPeriodTimeStamp()
+    ).toString();
+    let durationPeriod = (await stakingContract.durationPeriod()).toString();
+    let closingDate = new Date(
+      lastPeriodTimeStamp * 1000.0 + durationPeriod * 1000.0
+    );
+    let now = new Date();
+
+    if (now.getTime() > closingDate.getTime()) {
+      let tx = await stakingContract.closePeriod();
+      await tx.wait().then((e) => {
+        console.log("done");
+      });
+    } else {
+      console.log("Its not time yet");
+    }
   } catch (e) {
     console.log("failed to close the period", e);
   }
